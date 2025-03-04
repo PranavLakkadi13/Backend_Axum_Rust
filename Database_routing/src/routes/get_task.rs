@@ -19,6 +19,7 @@ pub async fn get_task(
     Extension(db_connection): Extension<DatabaseConnection>,
 ) -> Result<Json<ResponseClient>, StatusCode> {
     let task = Tasks::find_by_id(task_id)
+        .filter(<Tasks as EntityTrait>::Column::DeletedAt.is_null()) // also gets the tasks that are not null in delete column
         .one(&db_connection)
         .await
         .ok()
@@ -68,6 +69,7 @@ pub async fn get_all_tasks(
         // the below method issue is that if the optional filter is like none it won't know how to deal with it
         // .filter(<Tasks as EntityTrait>::Column::Priority.eq(query.priority)) // here we are keeping the filter based on the query filter passed
         .filter(priority_filter.clone()) // this is using the priority filter
+        .filter(<Tasks as EntityTrait>::Column::DeletedAt.is_null())
         .all(&db_connection) // here we are getting all the tasks instead of just 1
         .await
         .map_err(|_error| StatusCode::INTERNAL_SERVER_ERROR)? // here we are mapping any error that may occur to a status code

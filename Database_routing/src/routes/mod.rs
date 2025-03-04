@@ -8,6 +8,7 @@ mod get_task;
 mod hello_world;
 mod partial_update_task;
 mod update_task;
+mod users;
 
 use create_task::create_task;
 use delete_task::{delete_task, soft_delete};
@@ -15,6 +16,7 @@ use get_task::{get_all_tasks, get_task};
 use hello_world::hello_world;
 use partial_update_task::partial_atomic_update_task;
 use update_task::atomic_update_task;
+use users::{create_user, login};
 
 pub async fn create_routes(database_url: DatabaseConnection) -> Router {
     Router::new()
@@ -31,6 +33,8 @@ pub async fn create_routes(database_url: DatabaseConnection) -> Router {
         )
         .route("/delete_task/{task_id}", delete(delete_task))
         .route("/delete_task/{task_id}", put(soft_delete))
+        .route("/users", post(create_user))
+        .route("/users/login", post(login))
         // created a middleware layer for the database to be accessed
         // and as you know when the middleware is declared all the routes above it can access the middleware
         .layer(Extension(database_url))
